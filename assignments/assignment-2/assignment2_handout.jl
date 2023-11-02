@@ -1,18 +1,5 @@
 using LinearAlgebra
 
-# Test Cases
-x1 = [1, 2, 3]
-y1 = [1, 2, 3]
-
-x2 = [1, 2, 4]
-y2 = [1, 3, 3]
-
-x3 = [0, 1, 2, 3, 4, 5, 6, 7]
-y3 = [15, 3, 89, 5, 78, 4, 1, 0]
-
-x4 = [0, 0.9, π / 2]
-y4 = [1, 0.622, 0]
-
 """ 
 Computes the coefficients of Newton's interpolating polynomial. 
     Inputs 
@@ -39,15 +26,6 @@ function newton_int(x, y)
 
 end
 
-# println("Newton Test 1    : ", newton_int(x1, y1))
-# println("Newton Test 1 New: ", newton_int_new(x1, y1))
-# println("Newton Test 2    : ", newton_int(x2, y2))
-# println("Newton Test 2 New: ", newton_int_new(x2, y2))
-# println("Newton Test 3    : ", newton_int(x3, y3))
-# println("Newton Test 4 New: ", newton_int_new(x3, y3))
-# println("Newton Test 4    : ", newton_int(x4, y4))
-# println("Newton Test 4 New: ", newton_int_new(x4, y4))
-
 """
 Evaluates a polynomial with Newton coefficients c 
 defined over nodes x using Horner's rule on the points in X.
@@ -67,6 +45,7 @@ function horner(c, x, X)
 
         p[i] = c[n]
 
+        # O(n) time complexity
         for j in n-1:-1:1
             p[i] = c[j] + (X[i] - x[j]) * p[i]
         end
@@ -74,16 +53,6 @@ function horner(c, x, X)
 
     return p
 end
-
-# c1 = newton_int(x1, y1)
-
-# X1 = [1, 2, 3]
-
-# println("Horner Test 1: ", horner(c1, x1, X1))
-# println()
-# p_true = fit(x1, y1)
-# vals_true = p_true.(X1)
-# println(vals_true)
 
 """
 Computes the number of equally spaced points to use for 
@@ -99,13 +68,14 @@ Output
     n: number of equally spaced points to use 	 
 """
 function subdivide(a, b, ω, tol)
-    for n in 2:1000
+    for n in 2:100
         h = (b - a) / n
 
         curr = ω^(n + 1) * h^(n + 1) / (4 * (n + 1))
 
         if curr < tol
-            # println("Subdivide Nodes: ", n + 1)
+            # n is number of intervals
+            # n + 1 is number of nodes
             return n + 1
         end
         n += 1
@@ -128,6 +98,7 @@ function chebyshev_nodes(a, b, ω, tol)
 
     n = 2
 
+    # Max value for factorial is 20
     while n < 20
         curr = ω^(n + 1) / 2^n / factorial(n + 1) * ((b - a) / 2)^(n + 1)
 
@@ -137,7 +108,7 @@ function chebyshev_nodes(a, b, ω, tol)
         n += 1
     end
 
-    # At this point n is the number of intervals
+    # n is the number of intervals
     # n + 1 is the number of nodes
 
     x = zeros(n + 1)
@@ -146,6 +117,5 @@ function chebyshev_nodes(a, b, ω, tol)
         x[i] = 0.5 * (a + b) + 0.5 * (b - a) * cos(π * (2 * i - 1) / (2 * n + 2))
     end
 
-    # println("Chebyshev Nodes: ", n + 1)
     return x
 end
