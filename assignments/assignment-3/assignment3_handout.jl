@@ -1,6 +1,6 @@
 
 """
-Compute the integral ∫f(x)dx over [a, b] with the composite trapezoidal 
+Compute the integral ∫f(x)dx over [a, b] with the composite trapezoidal
 rule using r subintervals.
 
 Inputs:
@@ -11,7 +11,17 @@ Inputs:
     r: number of subintervals
 """
 function composite_trapezoidal_rule(f, a, b, r)
-    return approximate_integral
+    h = (b - a) / r
+    sum = 0
+
+    for i in 1:r-1
+        sum += f(a + i * h)
+    end
+
+    res = 0.5 * h * (f(a) + f(b)) + h * sum
+
+    println(res)
+    return res
 end
 
 """
@@ -26,7 +36,17 @@ Inputs:
     r: number of subintervals
 """
 function composite_midpoint_rule(f, a, b, r)
-    return approximate_integral
+    h = (b - a) / r
+    res = 0
+
+    for i in 1:r
+        l = a + (i - 1) * h
+        r = a + i * h
+        res += (r - l) * f((l + r) / 2)
+    end
+
+    println(res)
+    return res
 end
 
 """
@@ -44,7 +64,18 @@ Inputs:
     r: even number of subintervals
 """
 function composite_simpsons_rule(f, a, b, r)
-    return approximate_integral
+    h = (b - a) / r
+    res = 0
+
+    for i in 1:r
+        l = a + (i - 1) * h
+        r = a + i * h
+
+        res += 1 / 6 * (r - l) * (f(l) + 4 * f((l + r) / 2) + f(r))
+    end
+
+    println(res)
+    return res
 end
 
 """
@@ -65,6 +96,7 @@ Returns:
     x: vector containing the nodes which the algorithm used to compute approximate_integral
 """
 function adaptive_simpsons_rule(f, a, b, tol, max_depth)
+    return 0, 0
     return approximate_integral, x
 end
 
@@ -85,6 +117,7 @@ Returns:
 
 """
 function newton(x0, P, d, tol, max_iters)
+    return 0
     return x_trace
 end
 
@@ -105,5 +138,6 @@ Returns:
 
 """
 function newton_optimizer(x0, P, d, tol, max_iters)
+    return 0
     return x_trace
 end
