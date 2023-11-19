@@ -103,7 +103,7 @@ function adaptive_simpsons_rule(f, a, b, tol, max_depth)
     e_next = (s_next - s_curr) / 15
 
     if abs(e_next) <= tol || max_depth == 0
-        return e_next, [a, m, b]
+        return s_next, [a, m, b]
     else
         left_integral, left_nodes = adaptive_simpsons_rule(f, a, m, tol / 2, max_depth - 1)
         right_integral, right_nodes = adaptive_simpsons_rule(f, m, b, tol / 2, max_depth - 1)
