@@ -20,7 +20,6 @@ function composite_trapezoidal_rule(f, a, b, r)
 
     res = 0.5 * h * (f(a) + f(b)) + h * sum
 
-    println(res)
     return res
 end
 
@@ -45,7 +44,6 @@ function composite_midpoint_rule(f, a, b, r)
         res += (r - l) * f((l + r) / 2)
     end
 
-    println(res)
     return res
 end
 
@@ -74,7 +72,6 @@ function composite_simpsons_rule(f, a, b, r)
         res += 1 / 6 * (r - l) * (f(l) + 4 * f((l + r) / 2) + f(r))
     end
 
-    println(res)
     return res
 end
 
@@ -96,10 +93,24 @@ Returns:
     x: vector containing the nodes which the algorithm used to compute approximate_integral
 """
 function adaptive_simpsons_rule(f, a, b, tol, max_depth)
-    return 0, 0
-    return approximate_integral, x
-end
+    m = (a + b) / 2
 
+    S(l, r) = 1 / 6 * (r - l) * (f(l) + 4 * f((l + r) / 2) + f(r))
+
+    s_curr = S(a, b)
+    s_next = S(a, m) + S(m, b)
+
+    e_next = (s_next - s_curr) / 15
+
+    if abs(e_next) <= tol || max_depth == 0
+        return e_next, [a, m, b]
+    else
+        left_integral, left_nodes = adaptive_simpsons_rule(f, a, m, tol / 2, max_depth - 1)
+        right_integral, right_nodes = adaptive_simpsons_rule(f, m, b, tol / 2, max_depth - 1)
+
+        return left_integral + right_integral, vcat(left_nodes, right_nodes[2:end]) # Avoid duplication of midpoint
+    end
+end
 
 """
 Use Newton's method to solve the nonlinear system of equations described in Problem 5.
