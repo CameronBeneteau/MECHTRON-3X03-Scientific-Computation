@@ -1,10 +1,10 @@
+using LinearAlgebra
 
 """
 Compute the integral ∫f(x)dx over [a, b] with the composite trapezoidal
 rule using r subintervals.
 
 Inputs:
-    
     f: function to integrate
     a: lower bound of the definite integral
     b: upper bound of the definite integral
@@ -28,7 +28,6 @@ Compute the integral ∫f(x)dx over [a, b] with the composite midpoint
 rule using r subintervals.
 
 Inputs:
-    
     f: function to integrate
     a: lower bound of the definite integral
     b: upper bound of the definite integral
@@ -55,21 +54,20 @@ In other words, the midpoints used by the basic Simpson's rule are
 included in the r+1 points on which we evaluate f(x).
 
 Inputs:
-    
     f: function to integrate
     a: lower bound of the definite integral
     b: upper bound of the definite integral
     r: even number of subintervals
 """
 function composite_simpsons_rule(f, a, b, r)
-    h = (b - a) / r
+    h = 2 * (b - a) / r
     res = 0
 
-    for i in 1:r
+    for i in 1:r/2
         l = a + (i - 1) * h
         r = a + i * h
 
-        res += 1 / 6 * (r - l) * (f(l) + 4 * f((l + r) / 2) + f(r))
+        res += h / 6 * (f(l) + 4 * f((l + r) / 2) + f(r))
     end
 
     return res
@@ -81,7 +79,6 @@ rule. Return the approximate integral along with the nodes (points) x
 used to compute it.  
 
 Inputs:
-    
     f: function to integrate
     a: lower bound of the definite integral
     b: upper bound of the definite integral
@@ -100,9 +97,7 @@ function adaptive_simpsons_rule(f, a, b, tol, max_depth)
     s_curr = S(a, b)
     s_next = S(a, m) + S(m, b)
 
-    e_next = (s_next - s_curr) / 15
-
-    if abs(e_next) <= tol || max_depth == 0
+    if abs(s_next - s_curr) / 15 <= tol || max_depth == 0
         return s_next, [a, m, b]
     else
         left_integral, left_nodes = adaptive_simpsons_rule(f, a, m, tol / 2, max_depth - 1)
@@ -128,7 +123,29 @@ Returns:
 
 """
 function newton(x0, P, d, tol, max_iters)
-    return 0
+    N = length(x0)
+    x_trace = [x0]
+
+    F = [norm(x0 - P[:, i]) - d[i] for i in 1:N]
+
+    for _ in 1:max_iters
+        J = zeros((N, N))
+
+        for i in 1:N
+            for j in 1:N
+                J[i, j] = (x_trace[end][j] - P[j, i]) / norm(x_trace[end] - P[:, i])
+            end
+        end
+
+        push!(x_trace, x_trace[end] - J \ F)
+
+        F = [norm(x_trace[end] - P[:, i]) - d[i] for i in 1:N]
+
+        if norm(F) <= tol
+            break
+        end
+    end
+
     return x_trace
 end
 
@@ -148,7 +165,59 @@ Returns:
     x_trace: Vector{Vector{Float64}} containing each Newton iterate x_k in R^n. 
 
 """
+function gradient(x, P, d)
+    N, M = length(x), length(d)
+    grad = zeros(N)
+
+    for i in 1:N
+        for m in 1:M
+            grad[i] += (norm(x - P[:, m]) - d[m]) * (x[i] - P[i, m]) / (norm(x - P[:, m]))
+        end
+    end
+
+    return 2 * grad
+end
+
+function hessian(x, P, d)
+    N, M = length(x), length(d)
+    hess = zeros((N, N))
+
+    for i in 1:N
+        for j in 1:i # Lower triangle only
+            for m in 1:M
+                if i == j
+                    hess[i, j] += ((norm(x - P[:, m]) - d[m]) / norm(x - P[:, m])
+                                   +
+                                   ((x[i] - P[i, m]) / norm(x - P[:, m]))^2
+                                   -
+                                   (norm(x - P[:, m]) - d[m]) * (x[i] - P[i, m])^2 / norm(x - P[:, m])^3)
+                else
+                    hess[i, j] += -(norm(x - P[:, m]) - d[m]) * (x[i] - P[i, m]) * (x[j] - P[j, m]) / norm(x - P[:, m])^3 + (x[i] - P[i, m]) * (x[j] - P[j, m]) / norm(x - P[:, m])^2
+                    hess[j, i] = hess[i, j] # Copy lower triangle to upper triangle
+                end
+            end
+        end
+    end
+
+    return 2 * hess
+end
+
 function newton_optimizer(x0, P, d, tol, max_iters)
-    return 0
+    x_trace = [x0]
+
+    grad = gradient(x0, P, d)
+    hess = hessian(x0, P, d)
+
+    for _ in 1:max_iters
+        push!(x_trace, x_trace[end] - hess \ grad)
+
+        grad = gradient(x_trace[end], P, d)
+        hess = hessian(x_trace[end], P, d)
+
+        if norm(grad) <= tol
+            break
+        end
+    end
+
     return x_trace
 end
