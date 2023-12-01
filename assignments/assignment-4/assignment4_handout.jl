@@ -12,7 +12,7 @@ Inputs:
 
 Outputs:
     λ: the estimate of the maximum magnitude eigenvalue
-    v: the estimate of the 
+    v: the estimate of the normalized eigenvector corresponding to λ
 """
 function power_method_symmetric(A, tol)
     return λ, v
