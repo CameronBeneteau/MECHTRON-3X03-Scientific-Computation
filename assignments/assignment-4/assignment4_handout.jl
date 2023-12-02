@@ -15,6 +15,18 @@ Outputs:
     v: the estimate of the normalized eigenvector corresponding to λ
 """
 function power_method_symmetric(A, tol)
+    λ, v = 0, ones(size(A, 1))
+
+    while true
+        v = A * v
+        v /= norm(v)
+        λ = v' * A * v
+
+        if norm(A * v - λ * v) <= tol
+            break
+        end
+    end
+
     return λ, v
 end
 
@@ -37,5 +49,46 @@ Outputs:
        the input edges. 
 """
 function page_rank(edges, tol)
+
+    # Get number or verticies
+    n = length(unique(edges))
+    m = size(edges, 1)
+
+    # Organize the destinations for source nodes
+    count = [[] for _ in 1:n]
+
+    for i in 1:m
+        push!(count[edges[i, 1]], edges[i, 2])
+    end
+
+    # Create and fill transition matrix
+    P = zeros(n, n)
+
+    for i in 1:n
+        if length(count[i]) == 0
+            P[:, i] .= 1 / n # Dead-end webpages randomly land on any webpage with equal probability
+        else
+            for j in count[i]
+                P[j, i] = 1 / length(count[i])
+            end
+        end
+    end
+
+    # Calculate the eigenvector corresponding to eigenvalue λ₁ = 1
+    v = ones(size(P, 1))
+
+    while true
+        v = P * v
+        v /= norm(v, 1)
+
+        if norm(P * v - v, 1) <= tol
+            break
+        end
+    end
+
     return v
 end
+
+# Why does this oscillate? Because eigenvalues are -1 and 1?
+# edges = [1 2; 2 1; 2 3; 3 2]
+# page_rank(edges, 1e-6)
