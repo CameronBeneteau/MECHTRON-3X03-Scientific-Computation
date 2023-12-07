@@ -88,7 +88,3 @@ function page_rank(edges, tol)
 
     return v
 end
-
-# Why does this oscillate? Because eigenvalues are -1 and 1?
-# edges = [1 2; 2 1; 2 3; 3 2]
-# page_rank(edges, 1e-6)
